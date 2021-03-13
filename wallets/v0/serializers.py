@@ -16,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create(**validated_data)
         Wallet.objects.create(user=user)
         password = validated_data["password"]
+
         user.set_password(password)
         user.save()
         return user
