@@ -38,17 +38,23 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=100, unique=True, db_index=True)
-    email = models.EmailField(max_length=100, unique=True, db_index=True)
+    tag = models.CharField(max_length=100, unique=True, db_index=True,
+                           null=True)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'tag'
 
     objects = UserManager()
 
+    def __str__(self):
+        return f"${self.tag}"
+
 
 class Wallet(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_primary = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user}"
 
 
 class Transaction(models.Model):
@@ -64,7 +70,13 @@ class Transaction(models.Model):
         ("WITHDRAWAL", "withdrawal"),
     ]
 
+    DIRECTION = [
+        ("INCOMING", "incoming"),
+        ("OUTGOING", "outgoing"),
+    ]
+
     status = models.CharField(choices=STATUS, max_length=100)
+    direction = models.CharField(choices=DIRECTION, max_length=100, null=True)
     transaction_type = models.CharField(choices=TRANSACTION_TYPE,
                                         max_length=100)
 
@@ -74,4 +86,16 @@ class Transaction(models.Model):
     reference_id = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=6, decimal_places=3)
 
-    wallet_id = models.ForeignKey(Wallet, on_delete=models.CASCADE)
+    wallet_id = models.ForeignKey(Wallet, on_delete=models.CASCADE, null=True)
+
+
+class TransactionEvent(models.Model):
+    TYPE = [
+        ("DEBIT", "debit"),
+        ("CREDIT", "credit"),
+    ]
+
+    transaction_id = models.ForeignKey(Transaction, on_delete=models.CASCADE)
+    wallet_id = models.ForeignKey(Wallet, on_delete=models.CASCADE, null=True)
+    amount = models.DecimalField(max_digits=6, decimal_places=3)
+    transac_type = models.CharField(choices=TYPE, max_length=20)
