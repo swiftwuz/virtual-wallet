@@ -1,4 +1,5 @@
 from django.db import models
+
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser, PermissionsMixin
 )
@@ -84,9 +85,13 @@ class Transaction(models.Model):
     recipient = models.CharField(max_length=100)
 
     reference_id = models.CharField(max_length=100)
-    amount = models.DecimalField(max_digits=6, decimal_places=3)
+    amount = models.IntegerField()
+    description = models.TextField(null=True)
 
-    wallet_id = models.ForeignKey(Wallet, on_delete=models.CASCADE, null=True)
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return f"{self.sender} sent {self.recipient} {self.amount}"
 
 
 class TransactionEvent(models.Model):
@@ -95,7 +100,7 @@ class TransactionEvent(models.Model):
         ("CREDIT", "credit"),
     ]
 
-    transaction_id = models.ForeignKey(Transaction, on_delete=models.CASCADE)
-    wallet_id = models.ForeignKey(Wallet, on_delete=models.CASCADE, null=True)
-    amount = models.DecimalField(max_digits=6, decimal_places=3)
-    transac_type = models.CharField(choices=TYPE, max_length=20)
+    transaction_type = models.CharField(choices=TYPE, max_length=20)
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, null=True)
+    amount = models.IntegerField()

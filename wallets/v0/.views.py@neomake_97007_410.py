@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from . serializers import (
     UserSerializer, CreatePaymentReq
 )
-from .services import convertCedisToPesewas
 
 
 class RegisterUserView(generics.GenericAPIView):
@@ -20,10 +19,10 @@ class RegisterUserView(generics.GenericAPIView):
         return Response(user_data, status=status.HTTP_201_CREATED)
 
 
-class TransactionView(generics.ListCreateAPIView):
+class TransactionView(generics.GenericAPIView):
     serializer_class = CreatePaymentReq
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         transaction = request.data
         serializer = self.serializer_class(data=transaction)
         serializer.is_valid(raise_exception=True)
