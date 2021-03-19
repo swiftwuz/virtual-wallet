@@ -36,12 +36,19 @@ class CreatePaymentReq(serializers.ModelSerializer):
         user_id = User.objects.get(tag=recipient)
         destination_wallet = Wallet.objects.get(user=user_id)
 
-        transaction = Transaction.objects.create(**validated_data,
-                                                 wallet=destination_wallet,)
+        transaction = Transaction.objects.create(amount=convertCedisToPesewas(
+            validated_data["amount"]),
+            sender=validated_data["sender"],
+            recipient=validated_data["recipient"],
+            wallet=destination_wallet,
+            transaction_type="DEBIT",
+            description=validated_data["description"],
+        )
 
         TransactionEvent.objects.create(
             wallet=destination_wallet, amount=convertCedisToPesewas(amount),
             transaction=transaction, transaction_type="DEBIT",
         )
 
+        transaction.save()
         return transaction
